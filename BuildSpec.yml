@@ -1,0 +1,21 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get install -y sshpass
+
+# wget http://sourceforge.net/projects/sshpass/files/latest download -O sshpass.tar.gz
+# tar -xvf sshpass.tar.gz
+# $cd sshpass-1.06
+# ./configure
+# sudo make install 
+
+
+# SHELL=zsh
+# sshpass -p ‘88888888’ ssh -t creative@109.12.122.105  << EOF
+# yarn -v
+# cd Roomz-test
+# cd zepter-app
+# yarn package-mac
+# EOF
