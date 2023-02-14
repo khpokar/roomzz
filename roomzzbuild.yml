@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CI/CD Build for GitHub
+
+Resources:
+  CodeBuildServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CloudWatchLogsPolicy
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - '*'
+              - Sid: S3GetObjectPolicy
+                Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                Resource:
+                  - '*'
+              - Sid: S3PutObjectPolicy
+                Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                Resource:
+                  - '*'
+              - Sid: S3BucketIdentity
+                Effect: Allow
+                Action:
+                  - 's3:GetBucketAcl'
+                  - 's3:GetBucketLocation'
+                Resource:
+                  - '*'
+
+
+  CodeBuildSourceCredential:
+    Type: 'AWS::CodeBuild::SourceCredential'
+    Properties:
+      AuthType: PERSONAL_ACCESS_TOKEN
+      ServerType: GITHUB
+      Token: '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'
+
+
+  MyProject:
+    Type: 'AWS::CodeBuild::Project'
+    Properties: 
+      Name: !Sub '${AWS::StackName}-build'
+      Description: This is CodeBuild For MAC .dmg build
+      ServiceRole: !Ref CodeBuildServiceRole
+      Artifacts:
+        Type: S3
+        Location: kishanpokar
+        Name: artifact-demo
+        Packaging: ZIP
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: >-
+                PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, 
+                PULL_REQUEST_REOPENED, PULL_REQUEST_MERGED
+            - Type: BASE_REF
+              Pattern: '^refs/heads/main$'
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/standard:5.0'
+      Source:
+        Type: GITHUB
+        Location: 'https://github.com/khpokar/ci-cd-demo-test.git'
+              
+
+
